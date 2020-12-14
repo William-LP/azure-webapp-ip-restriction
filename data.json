@@ -1,0 +1,10 @@
+{
+    "modules" : [
+        "Az.Accounts",
+        "Az.Websites"
+    ],
+    "directory_name" : "",
+    "tenant_id" : "",
+    "ressource_group_name" : "",
+    "app_service" : ""
+}
