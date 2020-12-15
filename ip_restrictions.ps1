@@ -62,9 +62,9 @@ function azureConnect {
         Get-AzureADTenantDetail | out-null 
         Write-Host "Connection à Azure :"
     } catch {         
-        $directoryName = $json_data.directory_name
+        $subscriptionId = $json_data.subscription_id
         $tenantId = $json_data.tenant_id
-        Connect-AzAccount -Tenant $tenantId -SubscriptionId $directoryName | out-null
+        Connect-AzAccount -Tenant $tenantId -SubscriptionId $subscriptionId | out-null
     } 
     Write-Host "- Connexion OK"    
     Write-Host ""
@@ -164,6 +164,5 @@ function updateAppServiceRestriction {
         }        
     }
 }
-
 
 main
