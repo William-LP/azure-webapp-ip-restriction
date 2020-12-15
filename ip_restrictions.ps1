@@ -1,6 +1,29 @@
 ﻿#Requires -RunAsAdministrator
 
 
+function isAnIP($ip) {
+    # This pattern match an IP + CIDR; eg. 192.168.0.1/24
+    $pattern = "^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}\/([8-9]|[1-2][0-9]|3[0-2])$"
+    if($ip -match $pattern) {
+        return $True        
+    } else {        
+        Write-Host "Erreur avec l'IP '$ip'"            
+        Write-Host "Ne semble pas être une adresse IP/CIDR. Attendu x.x.x.x/XX"
+        return $False
+    }
+}
+
+function ruleNameOK($rule) {
+    if ($rule.length -gt 32) {  
+        Write-Host "Erreur avec la règle '$rule'"            
+        Write-Host "Le nom de la règle ne doit pas excéder 32 caractères"          
+        return $False
+    } else {
+        return $True        
+    }
+}
+
+function main {
 $json_data=(Get-Content -Raw -Path "data.json") | ConvertFrom-Json 
 $whitelist="whitelist.txt"
 
@@ -10,6 +33,8 @@ Write-Host "+   Azure WebApp WhiteList   +"
 Write-Host "+----------------------------+"
 Write-Host ""
 
+azureConnect
+}
 
 function loadModules{
     Write-Host "Chargement des modules :"
@@ -91,7 +116,6 @@ function getAppService {
             if ($selectedAppService -match $AS.Name){                
                 $hasMatchAS = $True
                 break
-                Write-Host "GG"
             } 
         }
         if (!$hasMatchAS) { 
@@ -116,31 +140,30 @@ function getAppService {
 }
 
 function updateAppServiceRestriction {
-    $priority=10
+    $priority=100 # It's OK having same priority over multiple entries
+
     foreach($line in Get-Content $whitelist) {
-        $RuleName,$ip = $line.split(';') 
-        Write-Host "--- Ajout nouvelle règle ---"
-        write-host "Nom : $RuleName"
+        $ruleName,$ip = $line.split(';') 
+
+        if ((isAnIP($ip)) -and (ruleNameOK($ruleName))) {        
+        Write-Host "+--- Ajout nouvelle règle ---+"
+        write-host "Nom : $ruleName"
         write-host "IP : $ip"
         write-host "Priorité : $priority"
         Write-host "Type: Allow"
+        Write-Host "+----------------------------+"
         Add-AzWebAppAccessRestrictionRule `
         -ResourceGroupName $selectedRg `
         -WebAppName $selectedAppService `
-        -Name $RuleName `
+        -Name $ruleName `
         -Priority $priority `
         -Action 'Allow' `
         -IpAddress $ip
-
-        $priority++
+        } else {            
+            write-host "/!\ INFO - La règle '$ruleName' ($ip) n'a pas été ajouté"
+        }        
     }
 }
 
 
-azureConnect
-# updateAppServiceRestriction
-
-
-
-
-
+main
