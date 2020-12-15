@@ -31,7 +31,7 @@ To find your `tenant_id` go to portal.azure.com > Azure Active Directory > Prope
 
 **whitelist.txt**
 
-File should be named `whitelist.txt` and location specified at line 5 of [ip_restrictions.ps1](ip_restrictions.ps1) (default location is same directory)
+File should be named `whitelist.txt` and location specified at line 28 of [ip_restrictions.ps1](ip_restrictions.ps1) (default location is same directory)
 ```
 RuleName;IP/CIDR
 ```
